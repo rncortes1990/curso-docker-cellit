@@ -1,0 +1,35 @@
+version: "2.0"
+services:
+  mongo:
+   container_name: mongodb
+   image: mongo
+   networks:
+    red_curso:
+     ipv4_address: 172.16.238.2
+   ports:
+   - "27017:27017"
+  nodeapp:
+   container_name: backend
+   build: .
+   image: node-curso 
+   networks:
+    red_curso:
+     ipv4_address: 172.16.238.10    
+   ports:
+    - "8000:8000"
+   depends_on:
+      - mongo
+  backbatch:
+    image: centos:6
+    command: ["/bin/bash","-c","while : ; do curl -L 172.16.238.10:8000/customers| xargs -I {} echo {} ;sleep 10;done"]
+    networks:
+     red_curso:
+      ipv4_address: 172.16.238.11   
+
+networks:
+ red_curso:
+  driver: bridge
+  ipam:
+   config:
+    - subnet: 172.16.238.0/24
+      gateway: 172.16.238.1
